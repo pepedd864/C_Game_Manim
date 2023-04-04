@@ -49,16 +49,10 @@ void dig(int v)
   }
   for (map[v] = 1, i = 0; i < 4; i++)
   {
-    // 判断下一个方向是否越界或者是否是路(已遍历过)，就重新选择方向，这里没有回溯的思想，只是单纯找到一个可以向下走的方向，是一种假的回溯
-    if (v + a[i] < 0 || v + a[i] > Len * Len || map[v + a[i]])
-    {
-      continue;
-    }
+    // 判断下一个方向是否越界或者是否是路(已遍历过)，就重新选择方向
+    if (v + a[i] < 0 || v + a[i] > Len * Len || map[v + a[i]]) continue;
     // a[i] == 2 || a[i] == -2 是向左向右移动，后面的表示纵向距离等于1，即下个方向在下一行，而移动方向是左右方向，故不可行
-    if ((a[i] == 2 || a[i] == -2) && ((v / Len) - ((a[i] + v) / Len)))
-    {
-      continue;
-    }
+    if ((a[i] == 2 || a[i] == -2) && ((v / Len) - ((a[i] + v) / Len))) continue;
     map[v + a[i] / 2] = 1; // 在map地图对应位置赋值为1
     dig(v + a[i]);         //继续向下搜索
   }
@@ -78,8 +72,7 @@ int main()
   {               // place到终点(Len * Len - Len - 1)停止
     if (c == 'q') // 输入q退出
       break;
-    for (i = 0; c - move[i + 4] && i < 4; i++)
-      ; // 判断读入的是四个方向中的哪一个，i为索引
+    for (i = 0; c - move[i + 4] && i < 4; i++); // 判断读入的是四个方向中的哪一个，i为索引
     if (i < 4 && map[place + move[i]])
     {                   // i 是 adws中的一个且移动方向不是墙
       place += move[i]; // 根据move数组中的方向移动

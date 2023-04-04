@@ -1,8 +1,7 @@
-from turtle import update
 from manimlib import *
 
 # 渐变动画时长
-fade_during = 0.15
+fade_during = 0.05
 width = 21
 height = 15
 clen = 0.45
@@ -61,6 +60,8 @@ class Maze(Scene):
     def update_block(self, block, type):
         if type == 0:
             block.set_fill(BLUE, opacity=0.7).set_stroke(width=1).set_color(BLUE)
+        elif type == 1:
+            block.set_fill(PURPLE, opacity=0.7).set_stroke(width=0)
         elif type == 2:
             block.set_fill(YELLOW, opacity=0.7).set_stroke(width=0)
         elif type == 3:
