@@ -1,11 +1,14 @@
 #include <windows.h>
 #include <conio.h>
+#include <stdio.h>
 
-#define Len 31 // 地图长度, 为奇数, 否则墙壁缺失
+#define Len 21 // 地图长度, 为奇数, 否则墙壁缺失
 // 背景颜色
 #define RED 64
 #define BLUE 48
 #define BLACK 0
+#define GREEN 32
+#define YELLOW 96
 
 int c, i;                                             // i循环变量
 int place = Len;                                      // 玩家的位置
@@ -50,12 +53,74 @@ void dig(int v)
   for (map[v] = 1, i = 0; i < 4; i++)
   {
     // 判断下一个方向是否越界或者是否是路(已遍历过)，就重新选择方向
-    if (v + a[i] < 0 || v + a[i] > Len * Len || map[v + a[i]]) continue;
+    if (v + a[i] < 0 || v + a[i] > Len * Len || map[v + a[i]])
+      continue;
     // a[i] == 2 || a[i] == -2 是向左向右移动，后面的表示纵向距离等于1，即下个方向在下一行，而移动方向是左右方向，故不可行
-    if ((a[i] == 2 || a[i] == -2) && ((v / Len) - ((a[i] + v) / Len))) continue;
+    if ((a[i] == 2 || a[i] == -2) && ((v / Len) - ((a[i] + v) / Len)))
+      continue;
     map[v + a[i] / 2] = 1; // 在map地图对应位置赋值为1
     dig(v + a[i]);         //继续向下搜索
   }
+}
+
+void print()
+{
+  // 固定光标位置
+  SetConsoleCursorPosition(GetStdHandle((DWORD)-11), (COORD){0});
+  // 简单的遍历输出
+  for (int i = 0; i < Len * Len; i++)
+  {
+    if (i - place)
+    {
+      map[i] ? color(7, BLACK) : color(0, BLUE);
+      if (map[i] == 2)
+        color(0, GREEN);
+      if (map[i] == 3)
+        color(0, YELLOW);
+    }
+    else
+      color(0, RED);
+    printf(" %d", map[i]);
+    if (i % Len == Len - 1)
+      _cputs("\n");
+  }
+}
+
+_Bool inMap(int v)
+{
+  return v >= 0 && v < Len * Len;
+}
+
+// 曼哈顿距离
+int manhattan(int v)
+{
+  int x = v % Len;
+  int y = v / Len;
+  int x1 = (Len * Len - Len - 1) % Len;
+  int y1 = (Len * Len - Len - 1) / Len;
+  return abs(x - x1) + abs(y - y1);
+}
+_Bool reachedEnd = 0;
+void dfs(int v)
+{
+  if (v - (Len * Len - Len - 1) == 0) // 到达终点
+    reachedEnd = 1;
+  for (int x = 0; x < 4; x++)
+  {
+    print();
+    Sleep(10);
+    int t = v + move[x];
+    if (inMap(t) && map[t] == 1)
+    {
+      map[t] = 2; // 路径标记为2
+      dfs(t);
+      if (!reachedEnd)
+        map[t] = 3;
+      else
+        return;
+    }
+  }
+  return;
 }
 
 int main()
@@ -67,32 +132,21 @@ int main()
 
   dig(Len + 1);                            // 从起点(Len)开始打通墙，这样保证了最上下均不会被访问，即是墙，(len+1)表示在起点右边一个点开始，保证了最左右两边不会被访问
   map[Len] = map[Len * Len - Len - 1] = 1; // 起点(Len)和终点(Len * Len - Len - 1) 是 1(路)
-
-  for (c = 0; c = _getch(), place - (Len * Len - Len - 1);)
-  {               // place到终点(Len * Len - Len - 1)停止
-    if (c == 'q') // 输入q退出
+  dfs(place + 1);
+  for (c = 0; c = _getch(), place - (Len * Len - Len - 1);) //
+  {                                                         // place到终点(Len * Len - Len - 1)停止
+    if (c == 'q')                                           // 输入q退出
       break;
-    for (i = 0; c - move[i + 4] && i < 4; i++); // 判断读入的是四个方向中的哪一个，i为索引
+    for (i = 0; c - move[i + 4] && i < 4; i++)
+      ; // 判断读入的是四个方向中的哪一个，i为索引
     if (i < 4 && map[place + move[i]])
-    {                   // i 是 adws中的一个且移动方向不是墙
+    {                   // i 是adws中的一个且移动方向不是墙
       place += move[i]; // 根据move数组中的方向移动
     }
-    // 固定光标位置
-    SetConsoleCursorPosition(GetStdHandle((DWORD)-11), (COORD){0});
-    // 简单的遍历输出
-    for (i = 0; i < Len * Len; i++)
-    {
-      // 如果没有遍历到玩家位置上，就打印地图，否则打印玩家
-      if (i - place)
-      {
-        map[i] ? color(0, BLACK) : color(0, BLUE);
-        _cputs("  ");
-      }
-      else
-      {
-        color(0, RED);
-        _cputs("  ");
-      }
-    }
+    print();
   }
+  system("cls");
+  if (c != 'q')
+    printf("You Win!\n");
+  system("pause");
 }
