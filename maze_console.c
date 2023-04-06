@@ -2,7 +2,7 @@
 #include <conio.h>
 #include <stdio.h>
 
-#define Len 21 // 地图长度, 为奇数, 否则墙壁缺失
+#define Len 27 // 地图长度, 为奇数, 否则墙壁缺失
 // 背景颜色
 #define RED 64
 #define BLUE 48
@@ -63,12 +63,13 @@ void dig(int v)
   }
 }
 
-void print()
+void print(int v)
 {
   // 固定光标位置
   SetConsoleCursorPosition(GetStdHandle((DWORD)-11), (COORD){0});
+  int i = 0;
   // 简单的遍历输出
-  for (int i = 0; i < Len * Len; i++)
+  for (; i < Len * Len; i++)
   {
     if (i - place)
     {
@@ -84,6 +85,8 @@ void print()
     if (i % Len == Len - 1)
       _cputs("\n");
   }
+  color(7, BLACK);
+  printf("\nmanhattan distance: %d", manhattan(v));
 }
 
 _Bool inMap(int v)
@@ -96,6 +99,7 @@ int manhattan(int v)
 {
   int x = v % Len;
   int y = v / Len;
+  // 计算到终点的距离
   int x1 = (Len * Len - Len - 1) % Len;
   int y1 = (Len * Len - Len - 1) / Len;
   return abs(x - x1) + abs(y - y1);
@@ -105,19 +109,30 @@ void dfs(int v)
 {
   if (v - (Len * Len - Len - 1) == 0) // 到达终点
     reachedEnd = 1;
-  for (int x = 0; x < 4; x++)
+  int t = 0, min = 9999, mt = 0;
+  for (i = 0; i < 4; i++)
   {
-    print();
-    Sleep(10);
-    int t = v + move[x];
-    if (inMap(t) && map[t] == 1)
+    // 计算四个方向的距离，取最小的一个
+    t = v + move[i];
+    if (inMap(t) && map[t] == 1 && manhattan(t) < min)
     {
-      map[t] = 2; // 路径标记为2
+      min = manhattan(t);
+      mt = t;
+    }
+  }
+  // Sleep(5);
+  t = mt;
+  if (inMap(t) && map[t] == 1)
+  {
+    map[v] = 2; // 路径标记为2
+    print(t);
+    dfs(t);
+    if (!reachedEnd)
+    {
+      // 继续搜索
+      map[v] = 3; // 路径标记为3
+      print(v);
       dfs(t);
-      if (!reachedEnd)
-        map[t] = 3;
-      else
-        return;
     }
   }
   return;
@@ -143,7 +158,7 @@ int main()
     {                   // i 是adws中的一个且移动方向不是墙
       place += move[i]; // 根据move数组中的方向移动
     }
-    print();
+    print(place);
   }
   system("cls");
   if (c != 'q')
